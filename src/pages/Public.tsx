@@ -1,0 +1,76 @@
+import { useState, type FormEvent } from 'react';
+import { ArrowRight, ArrowUpRight, Check, ChevronRight, ClipboardCheck, Database, HeartPulse, LockKeyhole, QrCode, ScanLine, ShieldCheck, Stethoscope, UsersRound } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import type { Role } from '../data/demo';
+import { Brand } from '../components/ui/Brand';
+import { Button, Card, StatusBadge } from '../components/ui/Shared';
+import { Pipeline } from '../components/ui/Pipeline';
+import { useAuth, useToast } from '../app/App';
+
+const roleInfo: Array<{ role: Role; title: string; caption: string; bullets: string[]; icon: typeof HeartPulse; tint: string }> = [
+  { role: 'patient', title: 'For patients', caption: 'Your health record, all in one place.', bullets: ['View visits, prescriptions and reports', 'Keep your profile up to date', 'Share an opaque QR reference at care'], icon: HeartPulse, tint: 'mint' },
+  { role: 'clinician', title: 'For clinicians', caption: 'The right history at the point of care.', bullets: ['Verify access before viewing a record', 'Review longitudinal patient history', 'Add visit notes and reports'], icon: Stethoscope, tint: 'blue' },
+  { role: 'administrator', title: 'For public health', caption: 'Population signals without patient identities.', bullets: ['Monitor regional disease patterns', 'Review only aggregated statistics', 'Suppress small cohorts by default'], icon: UsersRound, tint: 'sand' },
+];
+
+const workflow = [
+  ['01', 'Patient registers', 'A patient profile is established in the record system.'],
+  ['02', 'A QR reference is created', 'A non-identifying reference points to the record.'],
+  ['03', 'Clinician authenticates', 'A care professional signs in to the clinician workspace.'],
+  ['04', 'QR reference is scanned', 'The clinician presents the patient’s reference.'],
+  ['05', 'Authorization is verified', 'The backend checks identity, token and permissions.'],
+  ['06', 'Record is displayed', 'Authorized care staff can review longitudinal history.'],
+  ['07', 'Data is de-identified and aggregated', 'A separate pipeline groups eligible data and applies a threshold.'],
+  ['08', 'Administrator reviews trends', 'Public-health teams see aggregate patterns only.'],
+];
+
+export function HomePage() {
+  return <div className="public-site">
+    <header className="public-header"><Brand /><nav className="public-nav"><a href="#how-it-works">How it works</a><a href="#roles">For your role</a><Link to="/security">Trust center</Link></nav><div className="header-actions"><Link to="/login" className="header-login">Sign in</Link><Link to="/login"><Button size="sm" icon={<ArrowRight size={15} />}>Access portal</Button></Link></div></header>
+    <main>
+      <section className="hero section-wrap">
+        <div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="eyebrow-dot" />SECURE HEALTH RECORDS & DISEASE TREND MONITORING</div><h1>One trusted record.<br /><span>Care without friction.</span></h1><p className="hero-lede">Secure health records and privacy-preserving disease insights—designed to work together without exposing what should stay private.</p><p className="hero-support">Authorized clinicians can securely access longitudinal patient records through QR-based access, while public-health administrators receive only anonymized and aggregated disease trends.</p><div className="hero-actions"><Link to="/login"><Button size="lg" icon={<ArrowRight size={17} />}>Access Portal</Button></Link><a href="#how-it-works" className="text-link">How It Works <ArrowUpRight size={15} /></a></div><div className="hero-assurance"><ShieldCheck size={16} /><span>Built around clear role separation</span><span className="assurance-divider" /> <span>Illustrative demo · synthetic data</span></div></div>
+        <div className="hero-art" aria-label="Illustration of a health record and privacy-preserving dashboard">
+          <div className="art-orbit art-orbit-one" /><div className="art-orbit art-orbit-two" />
+          <div className="mini-dashboard"><div className="mini-dash-top"><div><span className="mini-dot" /><span className="mini-dot" /><span className="mini-dot" /></div><span className="mini-dash-caption">Care workspace</span><span className="mini-avatar">KS</span></div><div className="mini-dash-body"><div className="mini-dash-side"><span className="mini-side-active" /><span /><span /><span /><span /></div><div className="mini-dash-content"><div className="mini-dash-welcome"><span>Patient overview</span><strong>Good morning, Rahul</strong></div><div className="mini-stat-row"><div className="mini-stat"><small>Visits</small><b>08</b><i /></div><div className="mini-stat"><small>Reports</small><b>04</b><i /></div><div className="mini-stat"><small>Active</small><b>02</b><i /></div></div><div className="mini-chart"><div className="mini-chart-heading"><span>Health timeline</span><small>Last 6 months</small></div><div className="mini-chart-lines"><span /><span /><span /><svg viewBox="0 0 300 65" preserveAspectRatio="none" aria-hidden="true"><path d="M0 48 C24 42 24 29 48 34S77 49 98 37 125 11 148 23 180 38 198 27 224 42 246 17 273 30 300 8" fill="none" stroke="#2c8b7d" strokeWidth="3" /></svg></div></div><div className="mini-secure-row"><span className="mini-lock"><LockKeyhole size={13} /></span><span>Record access is role-controlled</span><span className="mini-secure-pill">DEMO</span></div></div></div></div>
+          <div className="flow-chip flow-chip-patient"><span className="flow-chip-icon"><HeartPulse size={17} /></span><span><strong>Patient</strong><small>Own health record</small></span></div><div className="flow-chip flow-chip-record"><span className="flow-chip-icon"><ShieldCheck size={17} /></span><span><strong>Secure record</strong><small>Access verified</small></span></div><div className="flow-chip flow-chip-clinician"><span className="flow-chip-icon"><Stethoscope size={17} /></span><span><strong>Clinician</strong><small>Authorized care</small></span></div>
+        </div>
+      </section>
+      <section className="trust-strip"><div className="section-wrap trust-strip-inner"><div><ShieldCheck size={18} /><span>Role-based access by design</span></div><div><LockKeyhole size={18} /><span>Opaque QR references</span></div><div><UsersRound size={18} /><span>Aggregated public health view</span></div><div><ClipboardCheck size={18} /><span>Small-group suppression</span></div></div></section>
+      <section className="section-wrap role-section" id="roles"><div className="section-intro"><div className="eyebrow">A CLEAR VIEW FOR EVERY ROLE</div><h2>Connected care. <span>Separate access.</span></h2><p>Each workspace is shaped around what that role needs—and what it should never see.</p></div><div className="role-grid">{roleInfo.map(({ role, title, caption, bullets, icon: Icon, tint }) => <Card key={role} className="role-card"><div className={`role-icon role-${tint}`}><Icon size={21} /></div><h3>{title}</h3><p className="role-caption">{caption}</p><ul>{bullets.map((item) => <li key={item}><Check size={15} />{item}</li>)}</ul><Link to="/login" className="card-link">Explore {role === 'administrator' ? 'public health' : role} view <ChevronRight size={15} /></Link></Card>)}</div></section>
+      <section className="how-section" id="how-it-works"><div className="section-wrap"><div className="section-intro"><div className="eyebrow">HOW IT WORKS</div><h2>From a patient record<br />to a regional signal.</h2><p>Individual care access and population analytics follow distinct paths.</p></div><div className="workflow-grid">{workflow.map(([number, title, text], index) => <div className="workflow-step" key={number}><div className="workflow-step-number">{number}<span>{index < workflow.length - 1 && <i />}</span></div><div><h3>{title}</h3><p>{text}</p></div></div>)}</div></div></section>
+      <section className="section-wrap privacy-section"><div className="privacy-section-copy"><div className="eyebrow">PRIVACY BY DESIGN</div><h2>Useful insights,<br /><span>without the identifiers.</span></h2><p>Patient-level records support authorized care. Public-health analytics use a separate de-identification and aggregation pathway with a minimum group-size threshold.</p><div className="privacy-checks"><div><ShieldCheck size={17} /><span>Backend-enforced role-based access control</span></div><div><QrCode size={17} /><span>Secure token validation for QR references</span></div><div><Database size={17} /><span>De-identification, aggregation and small-group suppression</span></div></div><Link to="/security" className="text-link">Explore the trust center <ArrowUpRight size={15} /></Link></div><div className="pipeline-panel"><div className="pipeline-panel-head"><div><span className="eyebrow">SEPARATE ANALYTICS PATH</span><h3>Privacy pipeline</h3></div><StatusBadge tone="success">Aggregate view</StatusBadge></div><Pipeline compact /><div className="pipeline-note"><LockKeyhole size={15} /><span>Administrators do not receive individual patient records.</span></div></div></section>
+      <section className="closing-cta"><div className="section-wrap closing-cta-inner"><div><div className="eyebrow">SEE THE ROLE-BASED WORKFLOW</div><h2>Explore the prototype.</h2><p>Use a demo role to move through the patient, clinician, and public-health experiences.</p></div><Link to="/login"><Button size="lg" variant="light" icon={<ArrowRight size={17} />}>Access portal</Button></Link></div></section>
+    </main>
+    <footer className="public-footer"><div className="section-wrap footer-inner"><Brand /><div className="footer-note"><span>Secure Health Records & Disease Trend Monitoring</span><span>Illustrative prototype · synthetic data only</span></div><div className="footer-links"><Link to="/security">Trust center</Link><Link to="/login">Access portal</Link></div></div></footer>
+  </div>;
+}
+
+const roleChoices: Array<{ role: Role; label: string; description: string; icon: typeof HeartPulse }> = [
+  { role: 'patient', label: 'Patient', description: 'Your personal health record', icon: HeartPulse },
+  { role: 'clinician', label: 'Clinician', description: 'Authorized care workspace', icon: Stethoscope },
+  { role: 'administrator', label: 'Administrator', description: 'Aggregated disease analytics', icon: UsersRound },
+];
+const rolePath: Record<Role, string> = { patient: '/patient', clinician: '/clinician', administrator: '/admin' };
+
+export function LoginPage() {
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const { enterDemo } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const openDemo = (role: Role) => { enterDemo(role); navigate(rolePath[role]); };
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedRole || !email.trim() || !password.trim()) { setMessage('Choose a role and enter demo credentials to continue.'); return; }
+    enterDemo(selectedRole);
+    showToast('Demo session started', 'No credentials were verified by a backend.');
+    const from = (location.state as { from?: string } | null)?.from;
+    navigate(from?.startsWith(rolePath[selectedRole]) ? from : rolePath[selectedRole]);
+  };
+  const forgot = () => setMessage('Password recovery is not connected in this prototype. Use a demo role below.');
+  return <div className="login-page"><header className="public-header login-header"><Brand /><Link to="/" className="header-login">Back to home</Link></header><main className="login-main"><div className="login-aside"><div className="eyebrow"><span className="eyebrow-dot" />SECURE HEALTH WORKSPACE</div><h1>Care starts with<br /><span>the right access.</span></h1><p>Choose the workspace that matches your role. Each demo view is separated and uses synthetic information.</p><div className="login-aside-points"><div><ShieldCheck size={17} /><span>Role-specific navigation</span></div><div><QrCode size={17} /><span>QR workflow demo for clinicians</span></div><div><UsersRound size={17} /><span>Aggregate-only administrator view</span></div></div><div className="login-aside-foot"><LockKeyhole size={15} /> Prototype only · no live sign-in service</div></div><Card className="login-card"><div className="login-card-head"><div className="login-lock"><LockKeyhole size={18} /></div><div><h2>Access your portal</h2><p>Choose your role to continue.</p></div></div><div className="role-select-grid" role="group" aria-label="Select your role">{roleChoices.map(({ role, label, description, icon: Icon }) => <button type="button" key={role} className={`role-select ${selectedRole === role ? 'selected' : ''}`} aria-pressed={selectedRole === role} onClick={() => { setSelectedRole(role); setMessage(''); }}><span className="role-select-icon"><Icon size={18} /></span><span><strong>{label}</strong><small>{description}</small></span><span className="role-radio" /></button>)}</div>{selectedRole ? <form className="login-form" onSubmit={submit}><div className="form-heading"><strong>{selectedRole === 'administrator' ? 'Administrator sign in' : `${selectedRole[0].toUpperCase()}${selectedRole.slice(1)} sign in`}</strong><button type="button" className="subtle-link" onClick={() => setSelectedRole(null)}>Back to role selection</button></div><label>Email or username<input value={email} onChange={(event) => setEmail(event.target.value)} placeholder={selectedRole === 'patient' ? 'rahul.mehta@demo.health' : selectedRole === 'clinician' ? 'kavita.sharma@demo.health' : 'public.health@demo.health'} autoComplete="username" /></label><label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter any demo password" autoComplete="current-password" /></label><label>One-time code <span className="optional-tag">Optional · visual placeholder</span><input inputMode="numeric" maxLength={6} placeholder="6-digit code (not verified)" /></label>{message && <div className="form-message" role="alert">{message}</div>}<div className="login-form-bottom"><button className="subtle-link" type="button" onClick={forgot}>Forgot password?</button><Button type="submit" icon={<ArrowRight size={16} />}>Login</Button></div><p className="login-disclaimer">Prototype sign-in: any non-empty username and password opens the selected demo workspace. No credential is sent or verified.</p></form> : <div className="login-help"><span className="login-help-icon"><ScanLine size={18} /></span><p>Select a role, or jump straight into a workspace with a one-tap demo.</p></div>}<div className="demo-divider"><span />Quick demo access<span /></div><div className="demo-quick-actions">{roleChoices.map(({ role, label }) => <button type="button" key={role} onClick={() => openDemo(role)}>Demo as {label}<ArrowRight size={14} /></button>)}</div></Card></main><footer className="login-footer"><span>Secure Health Records & Disease Trend Monitoring</span><span className="login-footer-sep">·</span><Link to="/security">Security and privacy</Link><span className="login-footer-spacer" /><span>Synthetic demo data</span></footer></div>;
+}
